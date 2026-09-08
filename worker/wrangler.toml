@@ -1,0 +1,23 @@
+name = "cloudflare-rdp-gateway-worker"
+main = "worker/index.js"
+compatibility_date = "2026-01-01"
+
+# Fill in your account_id before publishing
+# account_id = "your_account_id_here"
+
+# If you use workers_dev, set to true to deploy to workers.dev subdomain during testing
+workers_dev = true
+
+[build]
+command = ""
+
+[durable_objects]
+bindings = [
+  { name = "RDP_BRIDGE", class_name = "RDPBridge" }
+]
+
+# Note: Sockets is an experimental/opt-in API for Workers. Your account may need special flags or settings.
+# Wrangler doesn't require an explicit "sockets" binding in all versions, but your account must enable it.
+
+[triggers]
+# routes = ["yourdomain.com/bridge*"]
