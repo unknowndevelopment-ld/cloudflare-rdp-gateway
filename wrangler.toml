@@ -1,28 +1,15 @@
-name = "cloudflare-rdp-gateway"
+name = "cloudflare-proxy"
 main = "worker/index.js"
 compatibility_date = "2026-01-01"
 
-# Fill in your account_id before publishing
-# account_id = "your_account_id_here"
+# Set your Cloudflare account id before publishing
+# account_id = "<YOUR_ACCOUNT_ID>"
 
-# Deploy static site assets from the frontend/ directory so Wrangler can detect static files
-[site]
-bucket = "frontend"
-
-# Deploy to workers.dev during testing. Set to false and add routes for custom domain deploy.
 workers_dev = true
 
-[build]
-command = ""
+[vars]
+# Optionally configured comma-separated allowlist of hostnames (e.g. "example.com,example.org"). If empty, all hosts are allowed.
+# ALLOWLIST_HOSTS = ""
 
-[durable_objects]
-bindings = [
-  { name = "RDP_BRIDGE", class_name = "RDPBridge" }
-]
-
-[exports.RDPBridge]
-type = "durable-object"
-storage = "sqlite"
-
-[triggers]
-# routes = ["yourdomain.com/bridge*"]
+# PROXY_TOKEN should be set as a secret in your account. For local testing you can set it here but DO NOT commit secrets.
+# PROXY_TOKEN = "change-me"
