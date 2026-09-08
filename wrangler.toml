@@ -1,0 +1,24 @@
+name = "cloudflare-rdp-gateway"
+main = "worker/index.js"
+compatibility_date = "2026-01-01"
+
+# Fill in your account_id before publishing
+# account_id = "your_account_id_here"
+
+# Deploy static site assets from the frontend/ directory so Wrangler can detect static files
+[site]
+bucket = "frontend"
+entry-point = "."
+
+workers_dev = true
+
+[build]
+command = ""
+
+[durable_objects]
+bindings = [
+  { name = "RDP_BRIDGE", class_name = "RDPBridge" }
+]
+
+[triggers]
+# routes = ["yourdomain.com/bridge*"]
