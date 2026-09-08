@@ -8,8 +8,8 @@ compatibility_date = "2026-01-01"
 # Deploy static site assets from the frontend/ directory so Wrangler can detect static files
 [site]
 bucket = "frontend"
-entry-point = "."
 
+# Deploy to workers.dev during testing. Set to false and add routes for custom domain deploy.
 workers_dev = true
 
 [build]
@@ -19,6 +19,10 @@ command = ""
 bindings = [
   { name = "RDP_BRIDGE", class_name = "RDPBridge" }
 ]
+
+[exports.RDPBridge]
+type = "durable-object"
+storage = "sqlite"
 
 [triggers]
 # routes = ["yourdomain.com/bridge*"]
