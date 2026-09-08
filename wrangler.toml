@@ -13,3 +13,7 @@ workers_dev = true
 
 # PROXY_TOKEN should be set as a secret in your account. For local testing you can set it here but DO NOT commit secrets.
 # PROXY_TOKEN = "change-me"
+
+[exports.RDPBridge]
+type = "durable-object"
+storage = "sqlite"
