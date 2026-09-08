@@ -86,41 +86,64 @@ function htmlPage(){
   const forward = document.getElementById('forward');
   const reload = document.getElementById('reload');
 
-  function proxyUrl(raw){
+  // Parent-managed history to avoid cross-origin iframe interactions
+  const historyStack = [];
+  let historyIndex = -1;
+
+  function buildProxyUrl(raw){
     return '/proxy?url=' + encodeURIComponent(raw) + '&token=' + encodeURIComponent(localStorage.getItem(tokenKey)||'');
   }
 
-  async function navigate(raw){
-    try{
-      const u = raw.trim();
-      if(!u) return;
-      // Normalize simple entries
-      const normalized = u.match(/^https?:\/\//) ? u : 'https://' + u;
-      address.value = normalized;
-      frame.src = proxyUrl(normalized);
-    }catch(e){ console.error(e) }
+  function normalizeUrl(input){
+    const t = input.trim();
+    return t.match(/^https?:\/\//i) ? t : 'https://' + t;
   }
 
-  go.addEventListener('click', ()=>navigate(address.value));
-  address.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') navigate(address.value); });
-  back.addEventListener('click', ()=>{ try{ frame.contentWindow.history.back(); }catch(e){} });
-  forward.addEventListener('click', ()=>{ try{ frame.contentWindow.history.forward(); }catch(e){} });
-  reload.addEventListener('click', ()=>{ try{ frame.contentWindow.location.reload(); }catch(e){ frame.src = frame.src } });
+  function navigateTo(raw, addToHistory = true){
+    const url = normalizeUrl(raw);
+    const proxied = buildProxyUrl(url);
+    frame.src = proxied;
+    if(addToHistory){
+      // drop forward entries
+      historyStack.splice(historyIndex + 1);
+      historyStack.push(url);
+      historyIndex = historyStack.length - 1;
+    }
+    address.value = url;
+  }
 
-  // Listen for messages from iframe pages to update address bar when possible
+  go.addEventListener('click', ()=>navigateTo(address.value, true));
+  address.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') navigateTo(address.value, true); });
+
+  back.addEventListener('click', ()=>{
+    if(historyIndex > 0){
+      historyIndex -= 1;
+      const url = historyStack[historyIndex];
+      navigateTo(url, false);
+    }
+  });
+
+  forward.addEventListener('click', ()=>{
+    if(historyIndex < historyStack.length - 1){
+      historyIndex += 1;
+      const url = historyStack[historyIndex];
+      navigateTo(url, false);
+    }
+  });
+
+  reload.addEventListener('click', ()=>{
+    if(historyIndex >= 0) navigateTo(historyStack[historyIndex], false);
+  });
+
+  // Keep the address bar in sync if framed page can post location (best-effort)
   window.addEventListener('message', (e)=>{
     if(e.data && e.data.type === 'location'){
       address.value = e.data.location;
     }
   });
 
-  // Simple history: update address when iframe changes location (best-effort)
-  frame.addEventListener('load', ()=>{
-    try{
-      // Try asking iframe to post its location
-      frame.contentWindow.postMessage({type:'request-location'}, '*');
-    }catch(e){}
-  });
+  // On initial load, optionally navigate to a default page (uncomment if desired)
+  // navigateTo('https://example.com', true);
 </script>
 </body>
 </html>`;
